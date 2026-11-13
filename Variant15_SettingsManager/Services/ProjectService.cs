@@ -13,7 +13,7 @@ public sealed class ProjectService
         // TODO: не размещайте весь проект в Main.
         
         
-        // TODO 4: Обрабатывать ошибки доступа и повреждённые данные.
+        
         // TODO 5: Добавить версию схемы настроек.
         // TODO 6: Реализовать сброс только собственной ветки реестра.
         // TODO 7: Вынести работу с настройками в DLL.
@@ -30,46 +30,79 @@ public sealed class ProjectService
     // TODO 2: Сохранять и читать настройки в HKCU\Software\StudentSystemProgramming.
     public void Save(Settings settings)
     {
-        ArgumentNullException.ThrowIfNull(settings);
-
-        using RegistryKey key = Registry.CurrentUser.CreateSubKey(RegistryPath, writable: true);
-
-        if (settings.Theme != "Light" && settings.Theme != "Dark")
         {
-            throw new ArgumentException("Недопустимая тема оформления.");
-        }
+            // TODO 4: Обрабатывать ошибки доступа и повреждённые данные.
+            try
+            {
+                using var key = Registry.CurrentUser.CreateSubKey(RegistryPath);
 
-        if (settings.LaunchCount < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(settings.LaunchCount));
-        }
+                if (key == null)
+                {
+                    throw new InvalidOperationException("Не удалось создать или открыть ключ реестра.");
+                }
 
-        key.SetValue("Theme", settings.Theme, RegistryValueKind.String);
-        key.SetValue("LaunchCount", settings.LaunchCount, RegistryValueKind.DWord);
+                key.SetValue("Theme", settings.Theme, RegistryValueKind.String);
+                key.SetValue("LaunchCount", settings.LaunchCount, RegistryValueKind.DWord);
+
+                Console.WriteLine("[INFO] Настройки успешно сохранены в реестр.");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.WriteLine($"[ERROR] Нет прав на запись в реестр: {ex.Message}");
+                Console.WriteLine("[INFO] Настройки не были сохранены.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Ошибка при сохранении настроек: {ex.Message}");
+            }
+        }
     }
 
     public Settings Load()
     {
         var settings = new Settings();
 
-        using RegistryKey? key = Registry.CurrentUser.OpenSubKey(RegistryPath);
-
-        if (key is null)
+        // TODO 4: Обрабатывать ошибки доступа и повреждённые данные.
+        try
         {
-            return settings;
+            using var key = Registry.CurrentUser.OpenSubKey(RegistryPath);
+
+            if (key == null)
+            {
+                Console.WriteLine("[INFO] Ключ реестра не найден. Используются настройки по умолчанию.");
+                return settings;
+            }
+            var themeValue = key.GetValue("Theme");
+            if (themeValue is string themeStr)
+            {
+                settings.Theme = themeStr;
+            }
+            else if (themeValue != null)
+            {
+                Console.WriteLine($"[WARNING] Theme имеет неправильный тип ({themeValue.GetType().Name}). Используется значение по умолчанию.");
+            }
+
+            var launchCountValue = key.GetValue("LaunchCount");
+            if (launchCountValue is int countInt)
+            {
+                settings.LaunchCount = countInt;
+            }
+            else if (launchCountValue != null)
+            {
+                Console.WriteLine($"[WARNING] LaunchCount имеет неправильный тип ({launchCountValue.GetType().Name}). Используется значение по умолчанию.");
+            }
+
+            Console.WriteLine("[INFO] Настройки успешно загружены из реестра.");
         }
-
-        object? themeValue = key.GetValue("Theme");
-        object? launchCountValue = key.GetValue("LaunchCount");
-
-        if (themeValue is string theme && (theme == "Light" || theme == "Dark"))
+        catch (UnauthorizedAccessException ex)
         {
-            settings.Theme = theme;
+            Console.WriteLine($"[ERROR] Нет прав доступа к реестру: {ex.Message}");
+            Console.WriteLine("[INFO] Используются настройки по умолчанию.");
         }
-
-        if (launchCountValue is int launchCount && launchCount >= 0)
+        catch (Exception ex)
         {
-            settings.LaunchCount = launchCount;
+            Console.WriteLine($"[ERROR] Неожиданная ошибка при чтении реестра: {ex.Message}");
+            Console.WriteLine("[INFO] Используются настройки по умолчанию.");
         }
 
         return settings;
