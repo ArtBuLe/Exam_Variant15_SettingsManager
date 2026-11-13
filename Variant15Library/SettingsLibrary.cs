@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading.Channels;
-using Microsoft.Win32;
+using Variant15Library;
 
-namespace Variant15.Services;
+namespace Variant15Library;
 
-public sealed class ProjectService
+public sealed class SettingsService
 {
 
     // TODO 10: Добавить тестовый режим без записи в реестр.
@@ -14,7 +15,7 @@ public sealed class ProjectService
     readonly Dictionary<string, object> _testRegistry = new();
 
     // Конструктор с параметром для включения тестового режима
-    public ProjectService(bool isTestMode = false)
+    public SettingsService(bool isTestMode = false)
     {
         _isTestMode = isTestMode;
         if (_isTestMode)
@@ -43,7 +44,7 @@ public sealed class ProjectService
 
         var afterReset = Load();
         Console.WriteLine($"[ПОСЛЕ СБРОСА] Тема: {afterReset.Theme}, Запусков: {afterReset.LaunchCount}, Схема: v{afterReset.SchemaVersion}, Последний запуск: {settings.LastRunUtc}");
-        
+
         Console.WriteLine("\nНажмите Enter для завершения.");
         Console.ReadLine();
 

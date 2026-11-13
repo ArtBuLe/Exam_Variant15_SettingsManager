@@ -2,7 +2,8 @@
 using System.Diagnostics;
 using System.Threading.Channels;
 
-using Variant15.Services;
+
+using Variant15Library;
 
 namespace Variant15;
 
@@ -16,10 +17,10 @@ internal static class Program
 
         // Стартовый сценарий нужен для проверки структуры проекта.
         // Реализацию индивидуальных требований выполняйте в ProjectService.
-        var service = new ProjectService();
+        var service = new SettingsService();
         await service.RunAsync();
 
-        var serveceTEST = new ProjectService(isTestMode:true);
+        var serveceTEST = new SettingsService(isTestMode:true);
         await serveceTEST.RunAsync();
 
         Console.WriteLine();
