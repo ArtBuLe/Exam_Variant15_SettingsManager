@@ -2,7 +2,7 @@
 
 public sealed class Settings
 {
-    //todo1
+    // TODO 1: Создать настройки Theme и LaunchCount.
     public string Theme { get; set; } = "Dark";
 
     public int LaunchCount { get; set; }

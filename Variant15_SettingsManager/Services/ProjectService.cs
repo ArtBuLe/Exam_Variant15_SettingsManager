@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading.Channels;
+using Microsoft.Win32;
 
 namespace Variant15.Services;
 
@@ -11,8 +12,8 @@ public sealed class ProjectService
         // TODO: перенесите предметную логику в отдельные методы и классы.
         // TODO: не размещайте весь проект в Main.
 
-        // TODO 1: Создать настройки Theme и LaunchCount.
-        // TODO 2: Сохранять и читать настройки в HKCU\Software\StudentSystemProgramming.
+        
+        
         // TODO 3: Задавать значения по умолчанию при отсутствии ключа или значения.
         // TODO 4: Обрабатывать ошибки доступа и повреждённые данные.
         // TODO 5: Добавить версию схемы настроек.
@@ -25,5 +26,54 @@ public sealed class ProjectService
 
         Console.WriteLine("Стартовый проект собран. Реализуйте задания варианта.");
         await Task.CompletedTask;
+    }
+    private const string RegistryPath = @"Software\StudentSystemProgramming";
+
+    // TODO 2: Сохранять и читать настройки в HKCU\Software\StudentSystemProgramming.
+    public void Save(Settings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+
+        using RegistryKey key = Registry.CurrentUser.CreateSubKey(RegistryPath, writable: true);
+
+        if (settings.Theme != "Light" && settings.Theme != "Dark")
+        {
+            throw new ArgumentException("Недопустимая тема оформления.");
+        }
+
+        if (settings.LaunchCount < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(settings.LaunchCount));
+        }
+
+        key.SetValue("Theme", settings.Theme, RegistryValueKind.String);
+        key.SetValue("LaunchCount", settings.LaunchCount, RegistryValueKind.DWord);
+    }
+
+    public Settings Load()
+    {
+        var settings = new Settings();
+
+        using RegistryKey? key = Registry.CurrentUser.OpenSubKey(RegistryPath);
+
+        if (key is null)
+        {
+            return settings;
+        }
+
+        object? themeValue = key.GetValue("Theme");
+        object? launchCountValue = key.GetValue("LaunchCount");
+
+        if (themeValue is string theme && (theme == "Light" || theme == "Dark"))
+        {
+            settings.Theme = theme;
+        }
+
+        if (launchCountValue is int launchCount && launchCount >= 0)
+        {
+            settings.LaunchCount = launchCount;
+        }
+
+        return settings;
     }
 }
