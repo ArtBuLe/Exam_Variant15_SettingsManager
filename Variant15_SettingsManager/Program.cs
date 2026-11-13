@@ -62,6 +62,7 @@ internal static class Program
         Console.ReadLine();
     }
 
+    // 5 ТЕСТОВ
     private static void RunTest(string testName, Action testAction)
     {
         Console.Write($"Выполняется: {testName,-50} ... ");
