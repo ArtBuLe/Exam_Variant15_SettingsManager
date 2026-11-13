@@ -14,7 +14,6 @@ public sealed class ProjectService
         
         
         
-        // TODO 5: Добавить версию схемы настроек.
         // TODO 6: Реализовать сброс только собственной ветки реестра.
         // TODO 7: Вынести работу с настройками в DLL.
 
@@ -43,6 +42,7 @@ public sealed class ProjectService
 
                 key.SetValue("Theme", settings.Theme, RegistryValueKind.String);
                 key.SetValue("LaunchCount", settings.LaunchCount, RegistryValueKind.DWord);
+                key.SetValue("Schema_Version",settings.SchemaVersion, RegistryValueKind.DWord);
 
                 Console.WriteLine("[INFO] Настройки успешно сохранены в реестр.");
             }
@@ -90,6 +90,16 @@ public sealed class ProjectService
             else if (launchCountValue != null)
             {
                 Console.WriteLine($"[WARNING] LaunchCount имеет неправильный тип ({launchCountValue.GetType().Name}). Используется значение по умолчанию.");
+            }
+
+            var schemaVersionValue = key.GetValue("Schema_Version");
+            if (schemaVersionValue is int schemaVersion)
+            {
+                settings.SchemaVersion = schemaVersion;
+            }
+            else if (schemaVersionValue != null)
+            {
+                Console.WriteLine($"[WARNING] Schema_Version имеет неправильный тип ({schemaVersionValue.GetType().Name}). Используется значение по умолчанию.");
             }
 
             Console.WriteLine("[INFO] Настройки успешно загружены из реестра.");
