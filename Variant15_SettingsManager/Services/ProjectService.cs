@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading.Channels;
 
-namespace Variant15;
+namespace Variant15.Services;
 
 public sealed class ProjectService
 {
@@ -10,6 +10,7 @@ public sealed class ProjectService
     {
         // TODO: перенесите предметную логику в отдельные методы и классы.
         // TODO: не размещайте весь проект в Main.
+
         // TODO 1: Создать настройки Theme и LaunchCount.
         // TODO 2: Сохранять и читать настройки в HKCU\Software\StudentSystemProgramming.
         // TODO 3: Задавать значения по умолчанию при отсутствии ключа или значения.
