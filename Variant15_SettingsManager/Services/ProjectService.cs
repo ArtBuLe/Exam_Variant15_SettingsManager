@@ -11,13 +11,14 @@ public sealed class ProjectService
     {
         // TODO: перенесите предметную логику в отдельные методы и классы.
         // TODO: не размещайте весь проект в Main.
-        
-        
-        // TODO 7: Вынести работу с настройками в DLL.
 
-        // TODO 8: Добавить LastRunUtc.
+
+
+
         // TODO 9: Реализовать миграцию настроек между версиями схемы.
         // TODO 10: Добавить тестовый режим без записи в реестр.
+
+        // TODO 7: Вынести работу с настройками в DLL.
 
         Console.WriteLine("Стартовый проект собран. Реализуйте задания варианта.");
         await Task.CompletedTask;
@@ -41,6 +42,7 @@ public sealed class ProjectService
                 key.SetValue("Theme", settings.Theme, RegistryValueKind.String);
                 key.SetValue("LaunchCount", settings.LaunchCount, RegistryValueKind.DWord);
                 key.SetValue("Schema_Version",settings.SchemaVersion, RegistryValueKind.DWord);
+                key.SetValue("LastRunUTC",settings.LastRunUtc, RegistryValueKind.DWord);
 
                 Console.WriteLine("[INFO] Настройки успешно сохранены в реестр.");
             }
@@ -98,6 +100,16 @@ public sealed class ProjectService
             else if (schemaVersionValue != null)
             {
                 Console.WriteLine($"[WARNING] Schema_Version имеет неправильный тип ({schemaVersionValue.GetType().Name}). Используется значение по умолчанию.");
+            }
+
+            var lastRunUTCValue = key.GetValue("LastRunUTC");
+            if (lastRunUTCValue is DateTime lastRunUTC)
+            {
+                settings.LastRunUtc = lastRunUTC;
+            }
+            else if (lastRunUTCValue != null)
+            {
+                Console.WriteLine($"[WARNING] LastRunUTC имеет неправильный тип ({lastRunUTCValue.GetType().Name}). Используется значение по умолчанию.");
             }
 
             Console.WriteLine("[INFO] Настройки успешно загружены из реестра.");

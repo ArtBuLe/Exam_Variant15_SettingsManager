@@ -8,4 +8,6 @@ public sealed class Settings
     public int LaunchCount { get; set; } = 0;
     // TODO 5: Добавить версию схемы настроек.
     public int SchemaVersion { get; set; } = 1;
+    // TODO 8: Добавить LastRunUtc.
+    public DateTime LastRunUtc { get; set; } = DateTime.UtcNow;
 }
