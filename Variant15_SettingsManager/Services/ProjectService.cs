@@ -13,8 +13,6 @@ public sealed class ProjectService
         // TODO: не размещайте весь проект в Main.
         
         
-        
-        // TODO 6: Реализовать сброс только собственной ветки реестра.
         // TODO 7: Вынести работу с настройками в DLL.
 
         // TODO 8: Добавить LastRunUtc.
@@ -116,5 +114,10 @@ public sealed class ProjectService
         }
 
         return settings;
+    }
+    // TODO 6: Реализовать сброс только собственной ветки реестра.
+    public void Reset()
+    {
+        Registry.CurrentUser.DeleteSubKeyTree(RegistryPath, throwOnMissingSubKey: false);
     }
 }
