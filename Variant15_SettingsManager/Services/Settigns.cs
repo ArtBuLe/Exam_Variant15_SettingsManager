@@ -7,7 +7,7 @@ public sealed class Settings
     public string Theme { get; set; } = "Dark";
     public int LaunchCount { get; set; } = 0;
     // TODO 5: Добавить версию схемы настроек.
-    public int SchemaVersion { get; set; } = 1;
+    public int SchemaVersion { get; set; } = 0;
     // TODO 8: Добавить LastRunUtc.
     public DateTime LastRunUtc { get; set; } = DateTime.UtcNow;
 }

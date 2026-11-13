@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading.Channels;
@@ -8,16 +8,13 @@ namespace Variant15.Services;
 
 public sealed class ProjectService
 {
-    // TODO 9: Реализовать миграцию настроек между версиями схемы.
-    // TODO 10: Добавить тестовый режим без записи в реестр.
-    // TODO 7: Вынести работу с настройками в DLL.
+    // TODO 9: Р РµР°Р»РёР·РѕРІР°С‚СЊ РјРёРіСЂР°С†РёСЋ РЅР°СЃС‚СЂРѕРµРє РјРµР¶РґСѓ РІРµСЂСЃРёСЏРјРё СЃС…РµРјС‹.
+    // TODO 10: Р”РѕР±Р°РІРёС‚СЊ С‚РµСЃС‚РѕРІС‹Р№ СЂРµР¶РёРј Р±РµР· Р·Р°РїРёСЃРё РІ СЂРµРµСЃС‚СЂ.
+    // TODO 7: Р’С‹РЅРµСЃС‚Рё СЂР°Р±РѕС‚Сѓ СЃ РЅР°СЃС‚СЂРѕР№РєР°РјРё РІ DLL.
     public async Task RunAsync()
     {
-        Console.WriteLine("Зачётный проект 15: Менеджер настроек приложения");
-        Console.WriteLine(new string('=', 64));
-
         var settings = Load();
-        Console.WriteLine($"[ЗАГРУЗКА] Тема: {settings.Theme}, Запусков: {settings.LaunchCount}, Схема: v{settings.SchemaVersion}, Последний запуск: {settings.LastRunUtc}");
+        Console.WriteLine($"[Р—РђР“Р РЈР—РљРђ] РўРµРјР°: {settings.Theme}, Р—Р°РїСѓСЃРєРѕРІ: {settings.LaunchCount}, РЎС…РµРјР°: v{settings.SchemaVersion}, РџРѕСЃР»РµРґРЅРёР№ Р·Р°РїСѓСЃРє: {settings.LastRunUtc}");
 
         settings.Theme = settings.Theme == "Light" ? "Dark" : "Light";
         settings.LaunchCount++;
@@ -26,32 +23,32 @@ public sealed class ProjectService
         Save(settings);
 
         var reloaded = Load();
-        Console.WriteLine($"[ПОВТОР]  Тема: {reloaded.Theme}, Запусков: {reloaded.LaunchCount}, Схема: v{reloaded.SchemaVersion}, Последний запуск: {settings.LastRunUtc}");
-        Console.WriteLine("\n[СБРОС] Удаляем ветку реестра...");
+        Console.WriteLine($"[РџРћР’РўРћР ]  РўРµРјР°: {reloaded.Theme}, Р—Р°РїСѓСЃРєРѕРІ: {reloaded.LaunchCount}, РЎС…РµРјР°: v{reloaded.SchemaVersion}, РџРѕСЃР»РµРґРЅРёР№ Р·Р°РїСѓСЃРє: {settings.LastRunUtc}");
+        Console.WriteLine("\n[РЎР‘Р РћРЎ] РЈРґР°Р»СЏРµРј РІРµС‚РєСѓ СЂРµРµСЃС‚СЂР°...");
         Reset();
 
         var afterReset = Load();
-        Console.WriteLine($"[ПОСЛЕ СБРОСА] Тема: {afterReset.Theme}, Запусков: {afterReset.LaunchCount}, Схема: v{afterReset.SchemaVersion}, Последний запуск: {settings.LastRunUtc}");
+        Console.WriteLine($"[РџРћРЎР›Р• РЎР‘Р РћРЎРђ] РўРµРјР°: {afterReset.Theme}, Р—Р°РїСѓСЃРєРѕРІ: {afterReset.LaunchCount}, РЎС…РµРјР°: v{afterReset.SchemaVersion}, РџРѕСЃР»РµРґРЅРёР№ Р·Р°РїСѓСЃРє: {settings.LastRunUtc}");
         
-        Console.WriteLine("\nНажмите Enter для завершения.");
+        Console.WriteLine("\nРќР°Р¶РјРёС‚Рµ Enter РґР»СЏ Р·Р°РІРµСЂС€РµРЅРёСЏ.");
         Console.ReadLine();
 
         await Task.CompletedTask;
     }
     private const string RegistryPath = @"Software\StudentSystemProgramming";
 
-    // TODO 2: Сохранять и читать настройки в HKCU\Software\StudentSystemProgramming.
+    // TODO 2: РЎРѕС…СЂР°РЅСЏС‚СЊ Рё С‡РёС‚Р°С‚СЊ РЅР°СЃС‚СЂРѕР№РєРё РІ HKCU\Software\StudentSystemProgramming.
     public void Save(Settings settings)
     {
         {
-            // TODO 4: Обрабатывать ошибки доступа и повреждённые данные.
+            // TODO 4: РћР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ РѕС€РёР±РєРё РґРѕСЃС‚СѓРїР° Рё РїРѕРІСЂРµР¶РґС‘РЅРЅС‹Рµ РґР°РЅРЅС‹Рµ.
             try
             {
                 using var key = Registry.CurrentUser.CreateSubKey(RegistryPath);
 
                 if (key == null)
                 {
-                    throw new InvalidOperationException("Не удалось создать или открыть ключ реестра.");
+                    throw new InvalidOperationException("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕР·РґР°С‚СЊ РёР»Рё РѕС‚РєСЂС‹С‚СЊ РєР»СЋС‡ СЂРµРµСЃС‚СЂР°.");
                 }
 
                 key.SetValue("Theme", settings.Theme, RegistryValueKind.String);
@@ -60,16 +57,16 @@ public sealed class ProjectService
 
                 key.SetValue("LastRunUTC", settings.LastRunUtc.ToUniversalTime().Ticks, RegistryValueKind.QWord);
 
-                Console.WriteLine("[INFO] Настройки успешно сохранены в реестр.");
+                Console.WriteLine("[INFO] РќР°СЃС‚СЂРѕР№РєРё СѓСЃРїРµС€РЅРѕ СЃРѕС…СЂР°РЅРµРЅС‹ РІ СЂРµРµСЃС‚СЂ.");
             }
             catch (UnauthorizedAccessException ex)
             {
-                Console.WriteLine($"[ERROR] Нет прав на запись в реестр: {ex.Message}");
-                Console.WriteLine("[INFO] Настройки не были сохранены.");
+                Console.WriteLine($"[ERROR] РќРµС‚ РїСЂР°РІ РЅР° Р·Р°РїРёСЃСЊ РІ СЂРµРµСЃС‚СЂ: {ex.Message}");
+                Console.WriteLine("[INFO] РќР°СЃС‚СЂРѕР№РєРё РЅРµ Р±С‹Р»Рё СЃРѕС…СЂР°РЅРµРЅС‹.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Ошибка при сохранении настроек: {ex.Message}");
+                Console.WriteLine($"[ERROR] РћС€РёР±РєР° РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё РЅР°СЃС‚СЂРѕРµРє: {ex.Message}");
             }
         }
     }
@@ -78,14 +75,14 @@ public sealed class ProjectService
     {
         var settings = new Settings();
 
-        // TODO 4: Обрабатывать ошибки доступа и повреждённые данные.
+        // TODO 4: РћР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ РѕС€РёР±РєРё РґРѕСЃС‚СѓРїР° Рё РїРѕРІСЂРµР¶РґС‘РЅРЅС‹Рµ РґР°РЅРЅС‹Рµ.
         try
         {
             using var key = Registry.CurrentUser.OpenSubKey(RegistryPath);
 
             if (key == null)
             {
-                Console.WriteLine("[INFO] Ключ реестра не найден. Используются настройки по умолчанию.");
+                Console.WriteLine("[INFO] РљР»СЋС‡ СЂРµРµСЃС‚СЂР° РЅРµ РЅР°Р№РґРµРЅ. РСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РЅР°СЃС‚СЂРѕР№РєРё РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ.");
                 return settings;
             }
             var themeValue = key.GetValue("Theme");
@@ -95,7 +92,7 @@ public sealed class ProjectService
             }
             else if (themeValue != null)
             {
-                Console.WriteLine($"[WARNING] Theme имеет неправильный тип ({themeValue.GetType().Name}). Используется значение по умолчанию.");
+                Console.WriteLine($"[WARNING] Theme РёРјРµРµС‚ РЅРµРїСЂР°РІРёР»СЊРЅС‹Р№ С‚РёРї ({themeValue.GetType().Name}). РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ Р·РЅР°С‡РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ.");
             }
 
             var launchCountValue = key.GetValue("LaunchCount");
@@ -105,7 +102,7 @@ public sealed class ProjectService
             }
             else if (launchCountValue != null)
             {
-                Console.WriteLine($"[WARNING] LaunchCount имеет неправильный тип ({launchCountValue.GetType().Name}). Используется значение по умолчанию.");
+                Console.WriteLine($"[WARNING] LaunchCount РёРјРµРµС‚ РЅРµРїСЂР°РІРёР»СЊРЅС‹Р№ С‚РёРї ({launchCountValue.GetType().Name}). РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ Р·РЅР°С‡РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ.");
             }
 
             var schemaVersionValue = key.GetValue("Schema_Version");
@@ -115,7 +112,7 @@ public sealed class ProjectService
             }
             else if (schemaVersionValue != null)
             {
-                Console.WriteLine($"[WARNING] Schema_Version имеет неправильный тип ({schemaVersionValue.GetType().Name}). Используется значение по умолчанию.");
+                Console.WriteLine($"[WARNING] Schema_Version РёРјРµРµС‚ РЅРµРїСЂР°РІРёР»СЊРЅС‹Р№ С‚РёРї ({schemaVersionValue.GetType().Name}). РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ Р·РЅР°С‡РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ.");
             }
 
             var lastRunUTCValue = key.GetValue("LastRunUTC");
@@ -125,27 +122,81 @@ public sealed class ProjectService
             }
             else if (lastRunUTCValue != null)
             {
-                Console.WriteLine($"[WARNING] LastRunUTC имеет неправильный тип ({lastRunUTCValue.GetType().Name}). Используется значение по умолчанию.");
+                Console.WriteLine($"[WARNING] LastRunUTC РёРјРµРµС‚ РЅРµРїСЂР°РІРёР»СЊРЅС‹Р№ С‚РёРї ({lastRunUTCValue.GetType().Name}). РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ Р·РЅР°С‡РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ.");
             }
 
-            Console.WriteLine("[INFO] Настройки успешно загружены из реестра.");
+            Console.WriteLine("[INFO] РќР°СЃС‚СЂРѕР№РєРё СѓСЃРїРµС€РЅРѕ Р·Р°РіСЂСѓР¶РµРЅС‹ РёР· СЂРµРµСЃС‚СЂР°.");
         }
         catch (UnauthorizedAccessException ex)
         {
-            Console.WriteLine($"[ERROR] Нет прав доступа к реестру: {ex.Message}");
-            Console.WriteLine("[INFO] Используются настройки по умолчанию.");
+            Console.WriteLine($"[ERROR] РќРµС‚ РїСЂР°РІ РґРѕСЃС‚СѓРїР° Рє СЂРµРµСЃС‚СЂСѓ: {ex.Message}");
+            Console.WriteLine("[INFO] РСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РЅР°СЃС‚СЂРѕР№РєРё РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] Неожиданная ошибка при чтении реестра: {ex.Message}");
-            Console.WriteLine("[INFO] Используются настройки по умолчанию.");
+            Console.WriteLine($"[ERROR] РќРµРѕР¶РёРґР°РЅРЅР°СЏ РѕС€РёР±РєР° РїСЂРё С‡С‚РµРЅРёРё СЂРµРµСЃС‚СЂР°: {ex.Message}");
+            Console.WriteLine("[INFO] РСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РЅР°СЃС‚СЂРѕР№РєРё РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ.");
+        }
+
+        if (MigrateSettings(settings))
+        {
+            Console.WriteLine("[MIGRATION] РЎС…РµРјР° РѕР±РЅРѕРІР»РµРЅР°. РЎРѕС…СЂР°РЅСЏРµРј РЅРѕРІС‹Рµ РЅР°СЃС‚СЂРѕР№РєРё...");
+            Save(settings); // Р¤РёРєСЃРёСЂСѓРµРј РјРёРіСЂРёСЂРѕРІР°РЅРЅС‹Рµ РґР°РЅРЅС‹Рµ РІ СЂРµРµСЃС‚СЂРµ
         }
 
         return settings;
     }
-    // TODO 6: Реализовать сброс только собственной ветки реестра.
+    // TODO 6: Р РµР°Р»РёР·РѕРІР°С‚СЊ СЃР±СЂРѕСЃ С‚РѕР»СЊРєРѕ СЃРѕР±СЃС‚РІРµРЅРЅРѕР№ РІРµС‚РєРё СЂРµРµСЃС‚СЂР°.
     public void Reset()
     {
         Registry.CurrentUser.DeleteSubKeyTree(RegistryPath, throwOnMissingSubKey: false);
+    }
+
+    public bool MigrateSettings(Settings settings)
+    {
+        bool migrated = false;
+
+        // РџР РРњР•Р 
+        // РњРёРіСЂР°С†РёСЏ СЃ v0 РЅР° v1:
+        // Р’ СЃР°РјРѕР№ РїРµСЂРІРѕР№ РІРµСЂСЃРёРё РїСЂРѕРіСЂР°РјРјС‹ РЅРµ Р±С‹Р»Рѕ РїРѕР»СЏ Schema_Version,
+        // Р° С‚С‘РјРЅР°СЏ С‚РµРјР° РЅР°Р·С‹РІР°Р»Р°СЃСЊ "Black".
+        if (settings.SchemaVersion < 1)
+        {
+            Console.WriteLine("[MIGRATION] v0 -> v1: РѕР±РЅРѕРІР»СЏРµРј СѓСЃС‚Р°СЂРµРІС€РёРµ Р·РЅР°С‡РµРЅРёСЏ...");
+
+            if (settings.Theme == "Black")
+            {
+                settings.Theme = "Dark";
+                Console.WriteLine($"[MIGRATION]   Theme: \"Black\" -> \"{settings.Theme}\"");
+            }
+
+            if (settings.LaunchCount < 0)
+            {
+                Console.WriteLine($"[MIGRATION]   LaunchCount: {settings.LaunchCount} -> 0 (РёСЃРїСЂР°РІР»РµРЅРёРµ Р±Р°РіР°)");
+                settings.LaunchCount = 0;
+            }
+
+            settings.SchemaVersion = 1;
+            migrated = true;
+        }
+
+        // РџР РРњР•Р 
+        // РњРёРіСЂР°С†РёСЏ СЃ v1 РЅР° v2:
+        // Р”РѕРїСѓСЃС‚РёРј, РІ v2 РјС‹ СЂРµС€РёР»Рё, С‡С‚Рѕ С‚РµРјР° "White" С‚РµРїРµСЂСЊ РЅР°Р·С‹РІР°РµС‚СЃСЏ "Light".
+        if (settings.SchemaVersion < 2)
+        {
+            Console.WriteLine("[MIGRATION] v1 в†’ v2: РїРµСЂРµРёРјРµРЅРѕРІР°РЅРёРµ С‚РµРј...");
+
+            if (settings.Theme == "White")
+            {
+                settings.Theme = "Light";
+                Console.WriteLine($"[MIGRATION]   Theme: \"White\" ->\"{settings.Theme}\"");
+            }
+
+            settings.SchemaVersion = 2;
+            migrated = true;
+        }
+
+        return migrated;
     }
 }
