@@ -3,9 +3,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading.Channels;
-using Variant15Library;
+using Variant15Library.Models;
 
-namespace Variant15Library;
+namespace Variant15Library.Services;
 
 public sealed class SettingsService
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Variant15Library;
+namespace Variant15Library.Models;
 
 public sealed class Settings
 {
