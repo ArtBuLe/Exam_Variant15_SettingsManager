@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading.Channels;
@@ -7,20 +8,34 @@ namespace Variant15.Services;
 
 public sealed class ProjectService
 {
+    // TODO 9: Реализовать миграцию настроек между версиями схемы.
+    // TODO 10: Добавить тестовый режим без записи в реестр.
+    // TODO 7: Вынести работу с настройками в DLL.
     public async Task RunAsync()
     {
-        // TODO: перенесите предметную логику в отдельные методы и классы.
-        // TODO: не размещайте весь проект в Main.
+        Console.WriteLine("Зачётный проект 15: Менеджер настроек приложения");
+        Console.WriteLine(new string('=', 64));
 
+        var settings = Load();
+        Console.WriteLine($"[ЗАГРУЗКА] Тема: {settings.Theme}, Запусков: {settings.LaunchCount}, Схема: v{settings.SchemaVersion}");
 
+        settings.Theme = settings.Theme == "Light" ? "Dark" : "Light";
+        settings.LaunchCount++;
 
+        Save(settings);
 
-        // TODO 9: Реализовать миграцию настроек между версиями схемы.
-        // TODO 10: Добавить тестовый режим без записи в реестр.
+        var reloaded = Load();
+        Console.WriteLine($"[ПОВТОР]  Тема: {reloaded.Theme}, Запусков: {reloaded.LaunchCount}, Схема: v{reloaded.SchemaVersion}");
 
-        // TODO 7: Вынести работу с настройками в DLL.
+        Console.WriteLine("\n[СБРОС] Удаляем ветку реестра...");
+        Reset();
 
-        Console.WriteLine("Стартовый проект собран. Реализуйте задания варианта.");
+        var afterReset = Load();
+        Console.WriteLine($"[ПОСЛЕ СБРОСА] Тема: {afterReset.Theme}, Запусков: {afterReset.LaunchCount}, Схема: v{afterReset.SchemaVersion}");
+
+        Console.WriteLine("\nНажмите Enter для завершения.");
+        Console.ReadLine();
+
         await Task.CompletedTask;
     }
     private const string RegistryPath = @"Software\StudentSystemProgramming";
@@ -42,7 +57,10 @@ public sealed class ProjectService
                 key.SetValue("Theme", settings.Theme, RegistryValueKind.String);
                 key.SetValue("LaunchCount", settings.LaunchCount, RegistryValueKind.DWord);
                 key.SetValue("Schema_Version",settings.SchemaVersion, RegistryValueKind.DWord);
-                key.SetValue("LastRunUTC",settings.LastRunUtc, RegistryValueKind.DWord);
+
+                var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                TimeSpan time = settings.LastRunUtc.ToUniversalTime() - epoch;
+                key.SetValue("LastRunUTC",time.TotalSeconds, RegistryValueKind.DWord);
 
                 Console.WriteLine("[INFO] Настройки успешно сохранены в реестр.");
             }
