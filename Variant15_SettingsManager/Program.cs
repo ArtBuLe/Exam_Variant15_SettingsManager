@@ -19,6 +19,9 @@ internal static class Program
         var service = new ProjectService();
         await service.RunAsync();
 
+        var serveceTEST = new ProjectService(isTestMode:true);
+        await serveceTEST.RunAsync();
+
         Console.WriteLine();
         Console.WriteLine("Нажмите Enter для завершения.");
         Console.ReadLine();

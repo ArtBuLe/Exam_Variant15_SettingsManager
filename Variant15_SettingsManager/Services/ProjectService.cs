@@ -8,8 +8,22 @@ namespace Variant15.Services;
 
 public sealed class ProjectService
 {
-    // TODO 9: Реализовать миграцию настроек между версиями схемы.
+
     // TODO 10: Добавить тестовый режим без записи в реестр.
+    readonly bool _isTestMode;
+    readonly Dictionary<string, object> _testRegistry = new();
+
+    // Конструктор с параметром для включения тестового режима
+    public ProjectService(bool isTestMode = false)
+    {
+        _isTestMode = isTestMode;
+        if (_isTestMode)
+        {
+            Console.WriteLine("[TEST MODE] Активирован режим эмуляции реестра.");
+        }
+    }
+
+
     // TODO 7: Вынести работу с настройками в DLL.
     public async Task RunAsync()
     {
@@ -40,34 +54,41 @@ public sealed class ProjectService
     // TODO 2: Сохранять и читать настройки в HKCU\Software\StudentSystemProgramming.
     public void Save(Settings settings)
     {
+        if (_isTestMode)
         {
-            // TODO 4: Обрабатывать ошибки доступа и повреждённые данные.
-            try
+            Console.WriteLine("[TEST MODE] Эмуляция Save (запись в память).");
+            _testRegistry["Theme"] = settings.Theme;
+            _testRegistry["LaunchCount"] = settings.LaunchCount;
+            _testRegistry["Schema_Version"] = settings.SchemaVersion;
+            _testRegistry["LastRunUTC"] = settings.LastRunUtc.ToUniversalTime().Ticks;
+            return;
+        }
+        // TODO 4: Обрабатывать ошибки доступа и повреждённые данные.
+        try
+        {
+            using var key = Registry.CurrentUser.CreateSubKey(RegistryPath);
+
+            if (key == null)
             {
-                using var key = Registry.CurrentUser.CreateSubKey(RegistryPath);
-
-                if (key == null)
-                {
-                    throw new InvalidOperationException("Не удалось создать или открыть ключ реестра.");
-                }
-
-                key.SetValue("Theme", settings.Theme, RegistryValueKind.String);
-                key.SetValue("LaunchCount", settings.LaunchCount, RegistryValueKind.DWord);
-                key.SetValue("Schema_Version",settings.SchemaVersion, RegistryValueKind.DWord);
-
-                key.SetValue("LastRunUTC", settings.LastRunUtc.ToUniversalTime().Ticks, RegistryValueKind.QWord);
-
-                Console.WriteLine("[INFO] Настройки успешно сохранены в реестр.");
+                throw new InvalidOperationException("Не удалось создать или открыть ключ реестра.");
             }
-            catch (UnauthorizedAccessException ex)
-            {
-                Console.WriteLine($"[ERROR] Нет прав на запись в реестр: {ex.Message}");
-                Console.WriteLine("[INFO] Настройки не были сохранены.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ERROR] Ошибка при сохранении настроек: {ex.Message}");
-            }
+
+            key.SetValue("Theme", settings.Theme, RegistryValueKind.String);
+            key.SetValue("LaunchCount", settings.LaunchCount, RegistryValueKind.DWord);
+            key.SetValue("Schema_Version", settings.SchemaVersion, RegistryValueKind.DWord);
+
+            key.SetValue("LastRunUTC", settings.LastRunUtc.ToUniversalTime().Ticks, RegistryValueKind.QWord);
+
+            Console.WriteLine("[INFO] Настройки успешно сохранены в реестр.");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Console.WriteLine($"[ERROR] Нет прав на запись в реестр: {ex.Message}");
+            Console.WriteLine("[INFO] Настройки не были сохранены.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Ошибка при сохранении настроек: {ex.Message}");
         }
     }
 
@@ -75,9 +96,32 @@ public sealed class ProjectService
     {
         var settings = new Settings();
 
+        if (_isTestMode)
+        {
+            Console.WriteLine("[TEST MODE] Эмуляция Load (чтение из памяти).");
+
+            if (_testRegistry.TryGetValue("Theme", out var theme))
+                settings.Theme = (string)theme;
+            if (_testRegistry.TryGetValue("LaunchCount", out var launchCount))
+                settings.LaunchCount = (int)launchCount;
+            if (_testRegistry.TryGetValue("Schema_Version", out var schemaVersion))
+                settings.SchemaVersion = (int)schemaVersion;
+            if (_testRegistry.TryGetValue("LastRunUTC", out var lastRun))
+                settings.LastRunUtc = new DateTime((long)lastRun, DateTimeKind.Utc);
+
+            if (MigrateSettings(settings))
+            {
+                Console.WriteLine("[TEST MODE] Миграция применена, сохраняем в эмулятор...");
+                Save(settings);
+            }
+
+            return settings;
+        }
+
         // TODO 4: Обрабатывать ошибки доступа и повреждённые данные.
         try
         {
+
             using var key = Registry.CurrentUser.OpenSubKey(RegistryPath);
 
             if (key == null)
@@ -149,9 +193,25 @@ public sealed class ProjectService
     // TODO 6: Реализовать сброс только собственной ветки реестра.
     public void Reset()
     {
-        Registry.CurrentUser.DeleteSubKeyTree(RegistryPath, throwOnMissingSubKey: false);
+        if (_isTestMode)
+        {
+            Console.WriteLine("[TEST MODE] Эмуляция Reset (очистка памяти).");
+            _testRegistry.Clear();
+            return;
+        }
+
+        try
+        {
+            Registry.CurrentUser.DeleteSubKeyTree(RegistryPath, throwOnMissingSubKey: false);
+            Console.WriteLine("[INFO] Ветка реестра успешно удалена.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Ошибка при сбросе реестра: {ex.Message}");
+        }
     }
 
+    // TODO 9: Реализовать миграцию настроек между версиями схемы.
     public bool MigrateSettings(Settings settings)
     {
         bool migrated = false;
