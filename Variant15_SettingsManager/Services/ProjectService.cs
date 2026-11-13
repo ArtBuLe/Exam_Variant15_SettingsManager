@@ -17,22 +17,22 @@ public sealed class ProjectService
         Console.WriteLine(new string('=', 64));
 
         var settings = Load();
-        Console.WriteLine($"[ЗАГРУЗКА] Тема: {settings.Theme}, Запусков: {settings.LaunchCount}, Схема: v{settings.SchemaVersion}");
+        Console.WriteLine($"[ЗАГРУЗКА] Тема: {settings.Theme}, Запусков: {settings.LaunchCount}, Схема: v{settings.SchemaVersion}, Последний запуск: {settings.LastRunUtc}");
 
         settings.Theme = settings.Theme == "Light" ? "Dark" : "Light";
         settings.LaunchCount++;
+        settings.LastRunUtc = DateTime.UtcNow;
 
         Save(settings);
 
         var reloaded = Load();
-        Console.WriteLine($"[ПОВТОР]  Тема: {reloaded.Theme}, Запусков: {reloaded.LaunchCount}, Схема: v{reloaded.SchemaVersion}");
-
+        Console.WriteLine($"[ПОВТОР]  Тема: {reloaded.Theme}, Запусков: {reloaded.LaunchCount}, Схема: v{reloaded.SchemaVersion}, Последний запуск: {settings.LastRunUtc}");
         Console.WriteLine("\n[СБРОС] Удаляем ветку реестра...");
         Reset();
 
         var afterReset = Load();
-        Console.WriteLine($"[ПОСЛЕ СБРОСА] Тема: {afterReset.Theme}, Запусков: {afterReset.LaunchCount}, Схема: v{afterReset.SchemaVersion}");
-
+        Console.WriteLine($"[ПОСЛЕ СБРОСА] Тема: {afterReset.Theme}, Запусков: {afterReset.LaunchCount}, Схема: v{afterReset.SchemaVersion}, Последний запуск: {settings.LastRunUtc}");
+        
         Console.WriteLine("\nНажмите Enter для завершения.");
         Console.ReadLine();
 
@@ -58,9 +58,7 @@ public sealed class ProjectService
                 key.SetValue("LaunchCount", settings.LaunchCount, RegistryValueKind.DWord);
                 key.SetValue("Schema_Version",settings.SchemaVersion, RegistryValueKind.DWord);
 
-                var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-                TimeSpan time = settings.LastRunUtc.ToUniversalTime() - epoch;
-                key.SetValue("LastRunUTC",time.TotalSeconds, RegistryValueKind.DWord);
+                key.SetValue("LastRunUTC", settings.LastRunUtc.ToUniversalTime().Ticks, RegistryValueKind.QWord);
 
                 Console.WriteLine("[INFO] Настройки успешно сохранены в реестр.");
             }
@@ -121,9 +119,9 @@ public sealed class ProjectService
             }
 
             var lastRunUTCValue = key.GetValue("LastRunUTC");
-            if (lastRunUTCValue is DateTime lastRunUTC)
+            if (lastRunUTCValue is long ticks)
             {
-                settings.LastRunUtc = lastRunUTC;
+                settings.LastRunUtc = new DateTime(ticks, DateTimeKind.Utc);
             }
             else if (lastRunUTCValue != null)
             {
